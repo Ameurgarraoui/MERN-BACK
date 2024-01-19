@@ -37,7 +37,7 @@ pipeline {
 
 
 
-        stage('Build React App') {
+        stage('Build backend ') {
             steps {
                 dir('client') {
                 script {
