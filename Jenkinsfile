@@ -2,15 +2,16 @@ pipeline {
     agent any
     
     environment {
-        REPO_URL = 'https://github.com/your-username/your-react-app.git'
+        REPO_URL = 'https://github.com/Ameurgarraoui/MERN-Frontend.git'
         DOCKERHUB_USERNAME = credentials('dockerhub_cred')
         DOCKERHUB_PASSWORD = credentials('dockerhub_cred')
-        SONARQUBE_TOKEN = credentials('e873c592-cfef-4f3b-b1e0-8faddfd71e1f')
+        SONARQUBE_TOKEN = credentials('SonarQube')
         SONARQUBE_URL = 'http://localhost:9000'  // Adjust based on your SonarQube server URL
     }
 
     stages {
-        stage('Checkout') {
+        
+      stage('Checkout') {
             steps {
                 script {
                     // Clone the React app from GitHub
@@ -20,22 +21,30 @@ pipeline {
         }
 
         stage('SonarQube Analysis') {
-            steps {
-                script {
-                    withSonarQubeEnv('SonarQube') {
-                        sh 'npm install'
-                        sh "npm run sonar -Dsonar.host.url=${SONARQUBE_URL} -Dsonar.login=${SONARQUBE_TOKEN}"
-                    }
+    steps {
+        script {
+            // Change to the project directory
+            dir('client') {
+                withSonarQubeEnv('SonarQube') {
+                    // Install dependencies and run SonarQube analysis
+                    sh 'npm install'
+                    sh "npm run sonar -Dsonar.host.url=${SONARQUBE_URL} -Dsonar.login=${SONARQUBE_TOKEN}"
                 }
             }
         }
+    }
+}
+
+
 
         stage('Build React App') {
             steps {
+                dir('client') {
                 script {
                     sh 'npm install'
                     sh 'npm run build'
-                }
+                    }
+                 }
             }
         }
 
@@ -43,7 +52,7 @@ pipeline {
             steps {
                 script {
                     // Build Docker image and tag it
-                    sh "docker build -t ${DOCKERHUB_USERNAME}/mern-app:${env.BUILD_ID} ."
+                    sh "docker build -t ameurx1/mern-app:${env.BUILD_ID} ."
                 }
             }
         }
@@ -63,12 +72,5 @@ pipeline {
         }
     }
 
-    post {
-        success {
-            // Additional steps after a successful build
-        }
-        failure {
-            // Additional steps after a failed build
-        }
-    }
+   
 }
